@@ -12,13 +12,13 @@ import os
 
 app = Flask(__name__)
 
-REMOVE_BG_API_KEY = os.getenv("KXWmQvopog77oRo2jsTNwKqK")
-CLOUDINARY_CLOUD_NAME = os.getenv("dx3gpnczk")
+REMOVE_BG_API_KEY = os.getenv("REMOVE_BG_API_KEY")
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
 
 cloudinary.config(
-    cloud_name=os.getenv("dx3gpnczk"),
-    api_key=os.getenv("641871392431426"),
-    api_secret=os.getenv("NQXB3lMWyYgGrNZ3cXkkBZHzfvc"),
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
 )
 
 
