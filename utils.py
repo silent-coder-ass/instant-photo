@@ -5,11 +5,18 @@ import bcrypt
 
 if os.environ.get("VERCEL"):
     CONFIG_FILE = os.path.join("/tmp", "config.json")
+    DEFAULT_CONFIG_FILE = os.path.join("data", "config.json")
 else:
     CONFIG_FILE = os.path.join("data", "config.json")
+    DEFAULT_CONFIG_FILE = None
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
+        if DEFAULT_CONFIG_FILE and os.path.exists(DEFAULT_CONFIG_FILE):
+            with open(DEFAULT_CONFIG_FILE, "r") as f:
+                data = json.load(f)
+            save_config(data)
+            return data
         return {}
     with open(CONFIG_FILE, "r") as f:
         return json.load(f)
