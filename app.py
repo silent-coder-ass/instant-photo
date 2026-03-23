@@ -182,6 +182,30 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/sitemap.xml")
+def sitemap():
+    import datetime
+    from flask import Response
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{request.host_url.rstrip('/')}/</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>"""
+    return Response(xml, mimetype="application/xml")
+
+
+@app.route("/robots.txt")
+def robots():
+    from flask import Response
+    txt = f"User-agent: *\nAllow: /\nSitemap: {request.host_url.rstrip('/')}/sitemap.xml\n"
+    return Response(txt, mimetype="text/plain")
+
+
 def hex_to_rgb(hex_color):
     """Convert a hex color string (e.g. '#3B82F6') to an (R, G, B) tuple."""
     hex_color = hex_color.lstrip("#")
