@@ -9,19 +9,19 @@
       "service": "remove_bg",
       "key": "KXWmQvopog77oRo2jsTNwKqK",
       "label": "Init Key",
-      "active": true,
+      "active": false,
       "added_at": "2026-03-20T21:25:00",
       "usage_count": 5,
-      "last_failed": null
+      "last_failed": true
     },
     {
       "id": "d6a9d989-58d4-458e-b59f-11e599274bff",
       "service": "remove_bg",
       "key": "6AoFBLHkVgES7MZ9wnyo5i7T",
       "label": "secondary",
-      "active": false,
+      "active": true,
       "added_at": "2026-03-20T22:10:04.200074",
-      "usage_count": 3,
+      "usage_count": 7,
       "last_failed": null
     }
   ],

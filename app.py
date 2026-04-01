@@ -328,8 +328,8 @@ def process_single_image(input_image_bytes, bg_color="#FFFFFF"):
         public_id,
         transformation=[
             {"effect": "gen_restore"},
-            {"quality": "auto"},
-            {"fetch_format": "auto"},
+            {"quality": "100"},
+            {"fetch_format": "png"},
         ],
     )[0]
 
@@ -359,15 +359,17 @@ def process():
 
     try:
         # Layout settings
-        passport_width = int(request.form.get("width", 390))
-        passport_height = int(request.form.get("height", 480))
-        border = int(request.form.get("border", 2))
-        spacing = int(request.form.get("spacing", 10))
+        # Higher DPI scaling for maximum quality (600 DPI instead of 300 DPI)
+        scale = 2
+        passport_width = int(request.form.get("width", 390)) * scale
+        passport_height = int(request.form.get("height", 480)) * scale
+        border = int(request.form.get("border", 2)) * scale
+        spacing = int(request.form.get("spacing", 10)) * scale
         bg_color = request.form.get("bg_color", "#FFFFFF")  # Background color from UI
-        margin_x = 10
-        margin_y = 10
-        horizontal_gap = 10
-        a4_w, a4_h = 2480, 3508
+        margin_x = 10 * scale
+        margin_y = 10 * scale
+        horizontal_gap = 10 * scale
+        a4_w, a4_h = 2480 * scale, 3508 * scale
 
         # Collect images and their copy counts
         images_data = []
@@ -457,13 +459,14 @@ def process():
 
         # Export multi-page PDF
         output = BytesIO()
+        dpi_val = 300 * scale
         if len(pages) == 1:
-            pages[0].save(output, format="PDF", dpi=(300, 300))
+            pages[0].save(output, format="PDF", dpi=(dpi_val, dpi_val))
         else:
             pages[0].save(
                 output,
                 format="PDF",
-                dpi=(300, 300),
+                dpi=(dpi_val, dpi_val),
                 save_all=True,
                 append_images=pages[1:],
             )
@@ -484,4 +487,4 @@ def process():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)

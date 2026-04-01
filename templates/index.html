@@ -587,7 +587,10 @@
 
     confirmCropBtn.addEventListener('click', () => {
       if (!activeCropper || pendingCropId === null) return;
-      const canvas = activeCropper.getCroppedCanvas({ width: 400, height: 480 });
+      const canvas = activeCropper.getCroppedCanvas({
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
       canvas.toBlob(blob => {
         const photo = photos.find(p => p.id === pendingCropId);
         if (!photo) return;
