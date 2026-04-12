@@ -231,8 +231,8 @@
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm px-4">
       <div class="glass-card p-6 rounded-2xl shadow-2xl relative">
         <button onclick="closeAddCountdownModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-        <h3 class="text-xl font-bold mb-1">Add Countdown Banner</h3>
-        <p class="text-xs text-gray-500 mb-5">Tickcounter ID = number from the <code class="text-purple-400">data-id</code> attribute</p>
+        <h3 class="text-xl font-bold mb-1">Add Countdown</h3>
+        <p class="text-xs text-gray-500 mb-5">Native countdown timer — no external service needed</p>
         <form id="addCountdownForm" class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Title</label>
@@ -240,9 +240,9 @@
               class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Tickcounter ID</label>
-            <input type="text" id="cdTickId" placeholder="e.g. 9976258" required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder-gray-600">
+            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Target Date &amp; Time</label>
+            <input type="datetime-local" id="cdTargetDate" required
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
           </div>
           <div class="flex items-center gap-3">
             <input type="checkbox" id="cdEnabled" checked class="w-4 h-4 accent-purple-500 cursor-pointer">
@@ -271,8 +271,8 @@
               class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Tickcounter ID</label>
-            <input type="text" id="editCdTickId" required
+            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Target Date &amp; Time</label>
+            <input type="datetime-local" id="editCdTargetDate" required
               class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
           </div>
           <div class="flex items-center gap-3">
@@ -479,10 +479,10 @@
         return;
       }
       tbody.innerHTML = countdowns.map(cd => `
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-800/30 transition-colors group">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-gray-800/30 transition-colors">
           <div class="flex-1 min-w-0">
-            <div class="font-medium text-gray-200 truncate">🗳️ ${cd.title}</div>
-            <div class="text-xs text-purple-400 font-mono mt-0.5">ID: ${cd.tickcounter_id}</div>
+            <div class="font-medium text-gray-200 truncate">&#9203; ${cd.title}</div>
+            <div class="text-xs text-purple-400 font-mono mt-0.5">${cd.target_date ? new Date(cd.target_date).toLocaleString() : 'No date set'}</div>
           </div>
           <div class="flex items-center gap-3 flex-shrink-0">
             <span class="${cd.enabled ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-gray-700 text-gray-400 border-gray-600'} border px-2 py-1 rounded text-xs font-semibold">
@@ -492,7 +492,12 @@
               class="text-xs ${cd.enabled ? 'bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20' : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'} px-3 py-1.5 rounded-lg transition-colors">
               ${cd.enabled ? 'Hide' : 'Show'}
             </button>
-            <button onclick="openEditCountdownModal('${cd.id}', \`${cd.title.replace(/`/g,"'")}\`, '${cd.tickcounter_id}', ${cd.enabled})"
+            <button
+              data-id="${cd.id}"
+              data-title="${(cd.title||'').replace(/"/g,'&quot;')}"
+              data-date="${cd.target_date||''}"
+              data-enabled="${cd.enabled}"
+              onclick="openEditCountdownModal(this)"
               class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg transition-colors">
               Edit
             </button>
@@ -522,7 +527,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: document.getElementById('cdTitle').value,
-            tickcounter_id: document.getElementById('cdTickId').value,
+            target_date: new Date(document.getElementById('cdTargetDate').value).toISOString(),
             enabled: document.getElementById('cdEnabled').checked
           })
         });
@@ -537,11 +542,11 @@
     });
 
     // Edit Countdown Modal
-    function openEditCountdownModal(id, title, tickId, enabled) {
-      document.getElementById('editCdId').value = id;
-      document.getElementById('editCdTitle').value = title;
-      document.getElementById('editCdTickId').value = tickId;
-      document.getElementById('editCdEnabled').checked = enabled;
+    function openEditCountdownModal(btn) {
+      document.getElementById('editCdId').value        = btn.dataset.id;
+      document.getElementById('editCdTitle').value     = btn.dataset.title;
+      document.getElementById('editCdTargetDate').value = btn.dataset.date ? btn.dataset.date.slice(0,16) : '';
+      document.getElementById('editCdEnabled').checked = btn.dataset.enabled === 'true';
       document.getElementById('editCountdownModal').classList.remove('hidden');
     }
     function closeEditCountdownModal() {
@@ -559,7 +564,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: document.getElementById('editCdTitle').value,
-            tickcounter_id: document.getElementById('editCdTickId').value,
+            target_date: new Date(document.getElementById('editCdTargetDate').value).toISOString(),
             enabled: document.getElementById('editCdEnabled').checked
           })
         });
@@ -618,6 +623,12 @@
       const ta  = (id,ph,val='') => `<textarea id="${id}" placeholder="${ph}" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">${val}</textarea>`;
       const lbl = (text) => `<label class="block text-xs font-semibold text-gray-400 uppercase mb-1">${text}</label>`;
       const sel = (id,opts,val='') => `<select id="${id}" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">${opts.map(o=>`<option value="${o.v}" ${o.v===val?'selected':''}>${o.l}</option>`).join('')}</select>`;
+      const img_inp = (id, val='') => `
+        <div class="flex gap-2">
+          <input type="text" id="${id}" placeholder="https://..." value="${val.toString().replace(/"/g,'&quot;')}" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <button type="button" onclick="document.getElementById('${id}_file').click()" class="bg-gray-700 hover:bg-emerald-600 border border-gray-600 px-4 rounded-lg font-bold text-sm text-white transition-colors cursor-pointer">Upload</button>
+          <input type="file" id="${id}_file" accept="image/*" class="hidden" onchange="uploadWidgetImage(this, '${id}')">
+        </div>`;
 
       switch(type) {
         case 'notice': return `
@@ -633,14 +644,21 @@
         case 'winner': return `
           <div>${lbl('Winner Name')}${inp('wf_winner_name','e.g. Rahul Das',d.winner_name||'')}</div>
           <div>${lbl('Event / Award Name')}${inp('wf_event_name','e.g. Best Player 2026',d.event_name||'')}</div>
-          <div>${lbl('Photo URL (optional)')}${inp('wf_photo_url','https://...',d.photo_url||'')}</div>
+          <div>${lbl('Photo URL (optional)')}${img_inp('wf_photo_url',d.photo_url||'')}</div>
           <div>${lbl('Congratulation Message')}${ta('wf_message','Congratulations! You won...',d.message||'')}</div>
-          <div class="flex items-center gap-2"><input type="checkbox" id="wf_fireworks" ${d.fireworks!==false?'checked':''} class="accent-emerald-500 w-4 h-4"><label for="wf_fireworks" class="text-sm text-gray-300">🎆 Enable Fireworks Animation</label></div>`;
+          <div class="flex items-center gap-2 mt-2"><input type="checkbox" id="wf_fireworks" ${d.fireworks!==false?'checked':''} class="accent-emerald-500 w-4 h-4"><label for="wf_fireworks" class="text-sm text-gray-300">🎆 Enable Fireworks Animation</label></div>
+          <div class="mt-2">${lbl('Fireworks Custom Text (Optional)')}${inp('wf_fireworks_text','e.g. BOOM! or YAY!',d.fireworks_text||'')}</div>
+          <div class="grid grid-cols-2 gap-3 mt-2">
+            <div>${lbl('Duration')}${sel('wf_fw_duration',[{v:'5',l:'5 seconds'},{v:'10',l:'10 seconds'},{v:'999',l:'Endless'}],d.fw_duration||'5')}</div>
+            <div>${lbl('Intensity')}${sel('wf_fw_intensity',[{v:'30',l:'Light'},{v:'60',l:'Normal'},{v:'120',l:'Heavy'}],d.fw_intensity||'60')}</div>
+            <div>${lbl('Text Style')}${sel('wf_fw_tstyle',[{v:'sans-serif',l:'Modern'},{v:'serif',l:'Classic'},{v:'cursive',l:'Cursive'},{v:'monospace',l:'Code'}],d.fw_tstyle||'sans-serif')}</div>
+            <div>${lbl('Text Size')}${sel('wf_fw_tsize',[{v:'20',l:'Small'},{v:'40',l:'Normal'},{v:'80',l:'Huge'}],d.fw_tsize||'40')}</div>
+          </div>`;
 
         case 'person_card': return `
           <div>${lbl('Full Name')}${inp('wf_name','e.g. Dr. Aminul Islam',d.name||'')}</div>
           <div>${lbl('Role / Designation')}${inp('wf_role','e.g. Chief Minister',d.role||'')}</div>
-          <div>${lbl('Photo URL')}${inp('wf_photo_url','https://...',d.photo_url||'')}</div>
+          <div>${lbl('Photo URL')}${img_inp('wf_photo_url',d.photo_url||'')}</div>
           <div>${lbl('Short Bio')}${ta('wf_bio','A brief description...',d.bio||'')}</div>`;
 
         case 'link_card': return `
@@ -656,7 +674,14 @@
 
         case 'gallery': return `
           <div>${lbl('Gallery Title')}${inp('wf_title','Photo Gallery',d.title||'Photo Gallery')}</div>
-          <div>${lbl('Image URLs (one per line, optional: url|caption)')}${ta('wf_images','https://img1.jpg|Caption 1\nhttps://img2.jpg|Caption 2',(d.images||[]).map(i=>i.caption?`${i.url}|${i.caption}`:i.url).join('\n'))}</div>`;
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              ${lbl('Image URLs (one per line)')}
+              <button type="button" onclick="document.getElementById('wf_gallery_upload').click()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer">+ Upload Image</button>
+              <input type="file" id="wf_gallery_upload" accept="image/*" class="hidden" onchange="uploadWidgetImage(this, 'wf_images')">
+            </div>
+            ${ta('wf_images','https://img1.jpg|Caption 1\nhttps://img2.jpg|Caption 2',(d.images||[]).map(i=>i.caption?`${i.url}|${i.caption}`:i.url).join('\n'))}
+          </div>`;
 
         case 'event_card': return `
           <div>${lbl('Event Title')}${inp('wf_title','e.g. Vote Counting Event',d.title||'')}</div>
@@ -710,7 +735,7 @@
           })).filter(o => o.text);
           return { question, options: opts };
         }
-        case 'winner':     return { winner_name: g('wf_winner_name'), event_name: g('wf_event_name'), photo_url: g('wf_photo_url'), message: g('wf_message'), fireworks: gc('wf_fireworks') };
+        case 'winner':     return { winner_name: g('wf_winner_name'), event_name: g('wf_event_name'), photo_url: g('wf_photo_url'), message: g('wf_message'), fireworks: gc('wf_fireworks'), fireworks_text: g('wf_fireworks_text'), fw_duration: g('wf_fw_duration'), fw_intensity: g('wf_fw_intensity'), fw_tstyle: g('wf_fw_tstyle'), fw_tsize: g('wf_fw_tsize') };
         case 'person_card': return { name: g('wf_name'), role: g('wf_role'), photo_url: g('wf_photo_url'), bio: g('wf_bio') };
         case 'link_card':  return { title: g('wf_title'), url: g('wf_url'), description: g('wf_description'), button_text: g('wf_button_text'), color: g('wf_color') };
         case 'ticker':     return { messages: g('wf_messages').split('\n').map(s=>s.trim()).filter(Boolean), speed: g('wf_speed') };
@@ -738,30 +763,36 @@
       }
     }
 
+    // Cache widget objects so we don't need to pass JSON in onclick attributes
+    const _widgetCache = {};
+
     function renderWidgetsTable(widgets) {
       const tb = document.getElementById('widgetsTableBody');
       if (!widgets.length) {
         tb.innerHTML = `<div class="px-5 py-8 text-center text-gray-500">No widgets yet. Click "+ Add Widget" to create one.</div>`;
         return;
       }
+      // Store in cache keyed by ID
+      widgets.forEach(w => { _widgetCache[w.id] = w; });
+
       tb.innerHTML = widgets.map((w, idx) => `
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-4 hover:bg-gray-800/30 transition-colors group">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-4 hover:bg-gray-800/30 transition-colors">
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <div class="flex flex-col gap-0.5">
-              <button onclick="moveWidget('${w.id}', ${idx}, -1)" ${idx===0?'disabled':''} class="text-gray-500 hover:text-gray-300 disabled:opacity-20 text-xs leading-none">▲</button>
-              <button onclick="moveWidget('${w.id}', ${idx}, +1)" ${idx===widgets.length-1?'disabled':''} class="text-gray-500 hover:text-gray-300 disabled:opacity-20 text-xs leading-none">▼</button>
+              <button onclick="moveWidget('${w.id}', ${idx}, -1)" ${idx===0?'disabled':''} class="text-gray-500 hover:text-gray-300 disabled:opacity-20 text-xs leading-none">&#9650;</button>
+              <button onclick="moveWidget('${w.id}', ${idx}, +1)" ${idx===widgets.length-1?'disabled':''} class="text-gray-500 hover:text-gray-300 disabled:opacity-20 text-xs leading-none">&#9660;</button>
             </div>
-            <span class="text-lg">${WIDGET_LABELS[w.type]?.split(' ')[0]||'📦'}</span>
+            <span class="text-lg">${(WIDGET_LABELS[w.type]||'📦 Widget').split(' ')[0]}</span>
             <div class="min-w-0">
               <div class="font-medium text-gray-200 text-sm truncate">${WIDGET_LABELS[w.type]||w.type}</div>
               <div class="text-xs text-gray-500 truncate">${getWidgetPreview(w)}</div>
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
-            <span class="${w.enabled ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-gray-700 text-gray-400 border-gray-600'} border px-2 py-1 rounded text-xs font-semibold">${w.enabled ? 'ON' : 'OFF'}</span>
-            <button onclick="toggleWidget('${w.id}', ${w.enabled})" class="text-xs ${w.enabled?'bg-yellow-500/10 text-yellow-400':'bg-green-500/10 text-green-400'} px-3 py-1.5 rounded-lg">${w.enabled?'Hide':'Show'}</button>
-            <button onclick="openEditWidgetModal(${JSON.stringify(w).replace(/"/g,'&quot;')})" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg">Edit</button>
-            <button onclick="deleteWidget('${w.id}', this)" class="text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-lg">Delete</button>
+            <span class="${w.enabled?'bg-green-500/20 text-green-400 border-green-500/30':'bg-gray-700 text-gray-400 border-gray-600'} border px-2 py-1 rounded text-xs font-semibold">${w.enabled?'ON':'OFF'}</span>
+            <button onclick="toggleWidget('${w.id}',${w.enabled})" class="text-xs ${w.enabled?'bg-yellow-500/10 text-yellow-400':'bg-green-500/10 text-green-400'} px-3 py-1.5 rounded-lg">${w.enabled?'Hide':'Show'}</button>
+            <button onclick="openEditWidgetModal('${w.id}')" class="text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg">Edit</button>
+            <button onclick="deleteWidget('${w.id}',this)" class="text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-lg">Delete</button>
           </div>
         </div>
       `).join('');
@@ -793,7 +824,9 @@
       document.getElementById('addWidgetModal').classList.add('hidden');
       document.getElementById('addWidgetForm').reset();
     }
-    function openEditWidgetModal(w) {
+    function openEditWidgetModal(widgetId) {
+      const w = _widgetCache[widgetId];
+      if (!w) { alert('Widget not found — please reload the page.'); return; }
       document.getElementById('editWidgetId').value = w.id;
       document.getElementById('editWidgetType').value = w.type;
       document.getElementById('editWidgetEnabled').checked = w.enabled;
@@ -801,6 +834,47 @@
       document.getElementById('editWidgetModal').classList.remove('hidden');
     }
     function closeEditWidgetModal() { document.getElementById('editWidgetModal').classList.add('hidden'); }
+
+    // --- Widget Save Logic ---
+    
+    async function uploadWidgetImage(fileInput, targetId) {
+      if (!fileInput.files.length) return;
+      const file = fileInput.files[0];
+      const target = document.getElementById(targetId);
+      const originalValue = target.value;
+      const prevPlaceholder = target.placeholder;
+      
+      target.value = "";
+      target.placeholder = "Uploading to Cloudinary... please wait";
+      target.disabled = true;
+      
+      const formData = new FormData();
+      formData.append("image", file);
+      
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST', body: formData
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (target.tagName.toLowerCase() === 'textarea') {
+            target.value = originalValue ? (originalValue + '\n' + data.url) : data.url;
+          } else {
+            target.value = data.url;
+          }
+        } else {
+          alert('Upload failed: ' + (data.error || 'Unknown error'));
+          target.value = originalValue;
+        }
+      } catch (e) {
+        alert('Upload Error: ' + e.message);
+        target.value = originalValue;
+      }
+      
+      target.disabled = false;
+      target.placeholder = prevPlaceholder;
+      fileInput.value = '';
+    }
 
     // Submit add
     async function submitAddWidget(e) {

@@ -313,6 +313,24 @@ def api_admin_widgets_add():
         print(f"Error adding widget: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route("/api/admin/upload", methods=["POST"])
+@login_required
+def api_admin_upload():
+    if "image" not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+    file = request.files["image"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    try:
+        import cloudinary.uploader
+        upload_result = cloudinary.uploader.upload(file, resource_type="image")
+        secure_url = upload_result.get("secure_url")
+        return jsonify({"success": True, "url": secure_url})
+    except Exception as e:
+        print(f"Widget Image Upload Error: {e}")
+        return jsonify({"error": "Cloudinary upload failed: " + str(e)}), 500
+
 @app.route("/api/admin/widgets/<widget_id>", methods=["PUT"])
 @login_required
 def api_admin_widgets_update(widget_id):

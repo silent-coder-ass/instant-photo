@@ -29,36 +29,26 @@
     "enabled": false,
     "message": "Server is currently down for maintenance"
   },
-  "countdowns": [
-    {
-      "id": "56aeeb67-0e13-4b48-8660-5e699d3840bc",
-      "title": "Assam Election Result 2026",
-      "tickcounter_id": "<script>(function(d, s, id) { var js, pjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) return; js = d.createElement(s); js.id = id; js.src = \"//www.tickcounter.com/static/js/loader.js\"; pjs.parentNode.insertBefore(js, pjs); }(document, \"script\", \"tickcounter-sdk\"));</script><a data-type=\"countdown\" data-id=\"9977351\" class=\"tickcounter\" style=\"display:block; left:0; width:100%; height:0; position:relative; padding-bottom:25%; margin:0 auto;\" title=\"MLA Election result 2026\" href=\"//www.tickcounter.com/\">MLA Election result 2026</a>",
-      "enabled": true,
-      "created_at": "2026-04-11T11:28:49.265694"
-    },
-    {
-      "id": "fa20b6cc-148c-4b24-921c-18bde911e0ef",
-      "title": "Assam election result 2026",
-      "tickcounter_id": "<script>(function(d, s, id) { var js, pjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) return; js = d.createElement(s); js.id = id; js.src = \"//www.tickcounter.com/static/js/loader.js\"; pjs.parentNode.insertBefore(js, pjs); }(document, \"script\", \"tickcounter-sdk\"));</script><a data-type=\"countdown\" data-id=\"9977451\" class=\"tickcounter\" style=\"display:block; left:0; width:100%; height:0; position:relative; padding-bottom:25%; margin:0 auto;\" title=\"My countdown\" href=\"//www.tickcounter.com/\">My countdown</a>",
-      "enabled": false,
-      "created_at": "2026-04-11T11:49:46.624326"
-    }
-  ],
+  "countdowns": [],
   "widgets": [
     {
-      "id": "2356a877-d3d9-4a02-b44a-c089b2acd3eb",
+      "id": "372acdcf-27ab-49ad-b560-356d93962f95",
       "type": "winner",
-      "enabled": false,
-      "order": 0,
+      "enabled": true,
+      "order": 1,
       "data": {
-        "winner_name": "MAJIBUR RAHMAN (AIUDF)",
-        "event_name": "MLA 51 NO. DALGAON CONSTITUENCY",
-        "photo_url": "",
-        "message": "congraulation sir",
-        "fireworks": true
+        "winner_name": "hihhh",
+        "event_name": "jnjnjj",
+        "photo_url": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1775958187/hqyjuytzdyrkkmtpogk2.jpg",
+        "message": "",
+        "fireworks": true,
+        "fireworks_text": "AIUDF",
+        "fw_duration": "999",
+        "fw_intensity": "60",
+        "fw_tstyle": "sans-serif",
+        "fw_tsize": "20"
       },
-      "created_at": "2026-04-11T11:31:40.778015"
+      "created_at": "2026-04-12T07:13:11.596189"
     }
   ]
 }

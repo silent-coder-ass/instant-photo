@@ -201,7 +201,8 @@
     </div>
   </div>
 
-  <!-- Dynamic Countdown Banners (managed from admin panel) -->
+
+  <!-- Dynamic Countdown Banners (native JS — no external SDK) -->
   <div id="countdowns-wrapper"></div>
 
   <style>
@@ -209,10 +210,13 @@
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.4); opacity: 0.6; }
     }
+    .cd-box { display:flex; flex-direction:column; align-items:center; }
+    .cd-num  { font-size:clamp(22px,5vw,36px); font-weight:900; color:#e0e7ff; line-height:1; }
+    .cd-lbl  { font-size:9px; text-transform:uppercase; letter-spacing:.08em; color:#818cf8; margin-top:2px; }
+    .cd-sep  { font-size:clamp(20px,4vw,30px); font-weight:900; color:#6366f1; padding:0 6px; align-self:flex-start; margin-top:2px; }
   </style>
 
   <script>
-    // Load and render countdowns from admin-controlled API
     (async function loadCountdownBanners() {
       try {
         const res = await fetch('/api/countdowns');
@@ -222,43 +226,57 @@
         if (!countdowns.length) { wrapper.innerHTML = ''; return; }
 
         wrapper.innerHTML = countdowns.map(cd => `
-          <div style="
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #312e81 70%, #1e1b4b 100%);
-            border-bottom: 2px solid rgba(99,102,241,0.5);
-            padding: 8px 12px;
-            position: relative;
-            overflow: hidden;
-          ">
+          <div style="background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 40%,#312e81 70%,#1e1b4b 100%);border-bottom:2px solid rgba(99,102,241,0.5);padding:10px 16px;position:relative;overflow:hidden;">
             <div style="position:absolute;top:-30px;left:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(99,102,241,0.2) 0%,transparent 70%);pointer-events:none;"></div>
             <div style="position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(239,68,68,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-
-            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; position:relative; z-index:1; flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;position:relative;z-index:1;">
               <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);border-radius:999px;padding:2px 10px;">
                 <span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse-dot 1.4s ease-in-out infinite;"></span>
                 <span style="font-size:10px;font-weight:600;color:#a5b4fc;letter-spacing:0.06em;text-transform:uppercase;">Live</span>
               </div>
-              <span style="font-size:clamp(13px,3vw,16px);font-weight:700;background:linear-gradient(90deg,#c7d2fe,#a5b4fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0;letter-spacing:0.01em;">🗳️ ${cd.title}</span>
+              <span style="font-size:clamp(13px,3vw,16px);font-weight:700;background:linear-gradient(90deg,#c7d2fe,#a5b4fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🗳️ ${cd.title}</span>
             </div>
-
-            <div style="position:relative;z-index:1;max-width:600px;margin:0 auto;border-radius:8px;overflow:hidden;box-shadow:0 0 20px rgba(99,102,241,0.25);min-height:60px;">
-              <a data-type="countdown" data-id="${cd.tickcounter_id}" class="tickcounter"
-                style="display:block;left:0;width:100%;height:0;position:relative;padding-bottom:18%;margin:0 auto;font-size:0;color:transparent;"
-                title="${cd.title}" href="//www.tickcounter.com/"></a>
+            <div style="display:flex;justify-content:center;align-items:center;gap:4px;position:relative;z-index:1;" id="cd-timer-${cd.id}">
+              <div class="cd-box"><span class="cd-num" id="cd-d-${cd.id}">--</span><span class="cd-lbl">Days</span></div>
+              <span class="cd-sep">:</span>
+              <div class="cd-box"><span class="cd-num" id="cd-h-${cd.id}">--</span><span class="cd-lbl">Hours</span></div>
+              <span class="cd-sep">:</span>
+              <div class="cd-box"><span class="cd-num" id="cd-m-${cd.id}">--</span><span class="cd-lbl">Mins</span></div>
+              <span class="cd-sep">:</span>
+              <div class="cd-box"><span class="cd-num" id="cd-s-${cd.id}">--</span><span class="cd-lbl">Secs</span></div>
             </div>
           </div>
         `).join('');
 
-        // Force-reload SDK so it picks up dynamically added anchors
-        const old = document.getElementById('tickcounter-sdk');
-        if (old) old.remove();
-        const js = document.createElement('script');
-        js.id = 'tickcounter-sdk';
-        js.src = '//www.tickcounter.com/static/js/loader.js';
-        document.body.appendChild(js);
+        // Start native timers for each countdown
+        countdowns.forEach(cd => {
+          if (!cd.target_date) return;
+          const target = new Date(cd.target_date).getTime();
+          function tick() {
+            const now = Date.now();
+            const diff = target - now;
+            if (diff <= 0) {
+              ['d','h','m','s'].forEach(k => { const el = document.getElementById(`cd-${k}-${cd.id}`); if(el) el.textContent='00'; });
+              return;
+            }
+            const d = String(Math.floor(diff / 86400000)).padStart(2,'0');
+            const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+            const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+            ['d','h','m','s'].forEach((k,i) => {
+              const el = document.getElementById(`cd-${k}-${cd.id}`);
+              if(el) el.textContent = [d,h,m,s][i];
+            });
+          }
+          tick();
+          setInterval(tick, 1000);
+        });
 
       } catch (e) { console.warn('Countdown load failed', e); }
     })();
   </script>
+
+
 
   <!-- ===== HOME SCREEN WIDGET ZONE ===== -->
   <div id="widgets-zone"></div>
@@ -282,7 +300,14 @@
 
       // Post-render setup
       widgets.forEach(w => {
-        if (w.type === 'winner' && w.data.fireworks) startFireworks();
+        if (w.type === 'winner' && w.data.fireworks) {
+          startFireworks(w.data.fireworks_text, {
+            duration: parseInt(w.data.fw_duration||'5'),
+            intensity: parseInt(w.data.fw_intensity||'60'),
+            textStyle: w.data.fw_tstyle||'sans-serif',
+            textSize: parseInt(w.data.fw_tsize||'40')
+          });
+        }
         if (w.type === 'gallery') initGallery(w.id, w.data.images || []);
         if (w.type === 'ticker') initTicker(w.id);
       });
@@ -389,8 +414,6 @@
   // ---- 3. WINNER CELEBRATION ----
   function renderWinner(w) {
     const d = w.data;
-    return `<div style="background:linear-gradient(135deg,#1e1010,#3b1a0a,#1e1010);border-top:3px solid #f59e0b;border-bottom:1px solid rgba(245,158,11,0.3);padding:24px 20px;text-align:center;" id="winner-banner-${w.id}">
-      <div style="font-size:40px;margin-bottom:8px;animation:bounce-winner 1s infinite alternate;">🏆</div>
     const photoUrl = (d.photo_url || '').trim();
     const winnerPhoto = photoUrl
       ? `<img src="${photoUrl}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #f59e0b;margin:0 auto 10px;display:block;" onerror="this.style.display='none'">`
@@ -534,18 +557,34 @@
   // ============================================================
   //  FIREWORKS ANIMATION (for winner widget)
   // ============================================================
-  function startFireworks() {
+  function startFireworks(customText = '', options = {}) {
     const canvas = document.getElementById('fireworks-canvas');
     canvas.style.display = 'block';
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     const ctx = canvas.getContext('2d');
     const particles = [];
     const colors = ['#f59e0b','#ef4444','#6366f1','#22c55e','#f472b6','#38bdf8','#fde68a'];
+    const fwText = customText ? customText.trim() : '';
+    
+    const intensity = options.intensity || 60;
+    const durLimit = options.duration === 999 ? 99999 : ((options.duration || 5) * 60) / 40; // Approx 1.5 bursts/sec
+    const tStyle = options.textStyle || 'sans-serif';
+    const tSizeBase = options.textSize || 40;
 
     function spawnBurst() {
       const x = Math.random()*canvas.width, y = Math.random()*canvas.height*0.5;
-      for(let i=0; i<60; i++) {
-        const ang = (Math.PI*2/60)*i, speed = 2+Math.random()*4;
+      
+      // Spawn text particle in center of burst
+      if (fwText && Math.random() > 0.3) {
+        particles.push({ 
+          x, y: y, vx: (Math.random()-0.5)*1, vy: -1 - Math.random()*2, 
+          life: 1, color: colors[Math.floor(Math.random()*colors.length)], 
+          text: fwText, scale: 0 
+        });
+      }
+
+      for(let i=0; i<intensity; i++) {
+        const ang = (Math.PI*2/intensity)*i, speed = 2+Math.random()*4;
         particles.push({ x, y, vx:Math.cos(ang)*speed, vy:Math.sin(ang)*speed, life:1, color:colors[Math.floor(Math.random()*colors.length)] });
       }
     }
@@ -554,16 +593,26 @@
     function loop() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
       t++;
-      if(t%40===0 && burstsDone < 8) { spawnBurst(); burstsDone++; }
+      if(t%40===0 && burstsDone < durLimit) { spawnBurst(); burstsDone++; }
       for(let i=particles.length-1; i>=0; i--) {
         const p = particles[i];
-        p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life-=0.015;
-        if(p.life<=0) { particles.splice(i,1); continue; }
-        ctx.globalAlpha=p.life; ctx.fillStyle=p.color;
-        ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();
+        if (p.text) {
+          p.x += p.vx; p.y += p.vy; p.life -= 0.008; p.scale += 0.8;
+          if (p.life <= 0) { particles.splice(i,1); continue; }
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.font = "bold " + Math.min(20 + p.scale, tSizeBase * 1.5) + "px " + tStyle;
+          ctx.textAlign = "center";
+          ctx.fillText(p.text, p.x, p.y);
+        } else {
+          p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life-=0.015;
+          if(p.life<=0) { particles.splice(i,1); continue; }
+          ctx.globalAlpha=p.life; ctx.fillStyle=p.color;
+          ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();
+        }
       }
       ctx.globalAlpha=1;
-      if(particles.length>0 || burstsDone<8) requestAnimationFrame(loop);
+      if(particles.length>0 || burstsDone < durLimit) requestAnimationFrame(loop);
       else { setTimeout(()=>canvas.style.display='none', 500); }
     }
     loop();
