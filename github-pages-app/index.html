@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="App and File Download Hub">
-  <title>App Download Hub</title>
+  <title>Store</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -310,15 +310,15 @@
 
   <header>
     <div class="brand">
-      <i class="fa-solid fa-layer-group"></i>
-      AppHub
+      <i class="fa-solid fa-store"></i>
+      Store
     </div>
     <div class="menu-container">
       <button class="menu-btn" id="menuToggle" aria-label="Toggle menu">
         <i class="fa-solid fa-ellipsis-vertical"></i>
       </button>
       <div class="dropdown" id="dropdownMenu">
-        <a href="#" id="mainDownloadLink" download><i class="fa-solid fa-download" style="width: 20px;"></i> Download App</a>
+        <a href="#" id="mainDownloadLink" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-store" style="width: 20px;"></i> Store</a>
         <a href="https://github.com" target="_blank"><i class="fa-brands fa-github" style="width: 20px;"></i> GitHub Repo</a>
         <a href="#"><i class="fa-solid fa-circle-info" style="width: 20px;"></i> About</a>
       </div>
@@ -425,7 +425,7 @@
                 ${versionBadge}
               </div>
               <p class="card-desc">${item.description}</p>
-              <a href="${item.link}" class="btn-download" download>
+              <a href="${item.link}" class="btn-download" target="_blank" rel="noopener noreferrer">
                 <i class="fa-solid fa-cloud-arrow-down"></i> Download Now
               </a>
             </div>
