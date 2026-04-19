@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Admin Panel - Upload Data</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Outfit', sans-serif; background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-gray-100 min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="bg-gray-800/80 backdrop-blur border-b border-gray-700 sticky top-0 z-50 p-4">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <div class="text-xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+        <i class="fa-solid fa-screwdriver-wrench text-blue-400"></i>
+        Store Admin
+      </div>
+      <div>
+        <a href="index.html" class="text-sm text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 px-4">
+
+    <!-- Configuration Settings Form -->
+    <div class="lg:col-span-1 space-y-6">
+      <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-brands fa-github"></i> GitHub Settings</h2>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Personal Access Token (PAT) *</label>
+            <input type="password" id="ghToken" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="ghp_...">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">GitHub Username *</label>
+            <input type="text" id="ghUser" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="SanuwarBuilds">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Repository Name *</label>
+            <input type="text" id="ghRepo" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="instant-photo">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">JSON File Path *</label>
+            <input type="text" id="ghPath" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="github-pages-app/data.json" value="github-pages-app/data.json">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Branch Name</label>
+            <input type="text" id="ghBranch" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="main" value="main">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-cloud"></i> Cloudinary Settings</h2>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Cloud Name *</label>
+            <input type="text" id="cdName" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="dxxxxxx">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Unsigned Upload Preset *</label>
+            <input type="text" id="cdPreset" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="unsigned_preset">
+          </div>
+        </div>
+      </div>
+      
+      <button onclick="saveSettings()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 rounded-lg transition-colors text-sm">Save Config to Browser</button>
+    </div>
+
+    <!-- Upload Item Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg relative">
+        <div id="loadingOverlay" class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm z-10 hidden flex-col items-center justify-center rounded-xl">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+          <div id="loadingText" class="text-blue-400 font-medium">Processing...</div>
+        </div>
+
+        <h2 class="text-xl font-bold mb-6 border-b border-gray-700 pb-2">Add New Store Item</h2>
+        
+        <div class="space-y-5">
+          <!-- Title & Category -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">App / File Title *</label>
+              <input type="text" id="itemTitle" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:border-blue-500 focus:outline-none" placeholder="e.g. Cricket Speed Tracker">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Category / Folder *</label>
+              <input type="text" id="itemCategory" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:border-blue-500 focus:outline-none" placeholder="Apps" value="Apps" list="catSuggestions">
+              <datalist id="catSuggestions">
+                <option value="Apps">
+                <option value="Audio">
+                <option value="Images">
+                <option value="Games">
+              </datalist>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Description *</label>
+            <textarea id="itemDesc" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:border-blue-500 focus:outline-none" placeholder="High-performance tracking app..."></textarea>
+          </div>
+
+          <!-- Version & Display Image -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Version</label>
+              <input type="text" id="itemVersion" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:border-blue-500 focus:outline-none" placeholder="1.0.0">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Thumbnail / Display Image *</label>
+              <div class="flex gap-2">
+                <button type="button" onclick="document.getElementById('thumbUpload').click()" class="bg-gray-700 hover:bg-gray-600 px-3 rounded-lg text-sm transition-colors text-nowrap"><i class="fa-solid fa-image"></i> Select</button>
+                <input type="text" id="itemImageUrl" class="w-full bg-gray-900 border border-gray-700 rounded-r-lg p-3 focus:border-blue-500 focus:outline-none text-sm" placeholder="Image URL (auto-filled on upload)">
+                <input type="file" id="thumbUpload" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'itemImageUrl')">
+              </div>
+            </div>
+          </div>
+
+          <!-- File Link / Upload -->
+          <div class="border border-gray-700 rounded-lg p-4 bg-gray-900/50">
+            <label class="block text-sm font-bold text-blue-400 mb-3"><i class="fa-solid fa-cloud-arrow-down"></i> File to Download (Link) *</label>
+            
+            <div class="flex flex-col space-y-3">
+              <div class="flex gap-2">
+                <button type="button" onclick="document.getElementById('fileUpload').click()" class="bg-purple-600/30 text-purple-400 border border-purple-500/50 hover:bg-purple-600/50 px-4 py-2 rounded-lg text-sm transition-colors font-medium text-nowrap">
+                  <i class="fa-solid fa-upload"></i> Upload Media (Audio/Video)
+                </button>
+                <input type="file" id="fileUpload" class="hidden" onchange="uploadToCloudinary(this, 'itemFileUrl')">
+              </div>
+              <div class="text-xs text-gray-500 italic">For APKs or large files, do not upload directly to Cloudinary. Use GitHub releases or a RAW URL and paste the direct link below.</div>
+              <input type="url" id="itemFileUrl" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:border-blue-500 focus:outline-none" placeholder="https://github.com/...">
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button onclick="submitItem()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-1">
+              Add Item & Commit to GitHub
+            </button>
+          </div>
+          
+          <div id="statusMessage" class="hidden p-4 rounded-lg mt-4 text-center font-medium"></div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Config Persistence
+    const configKeys = ['ghToken', 'ghUser', 'ghRepo', 'ghPath', 'ghBranch', 'cdName', 'cdPreset'];
+
+    window.onload = () => {
+      configKeys.forEach(k => {
+        const val = localStorage.getItem('storeAdmin_' + k);
+        if (val) document.getElementById(k).value = val;
+      });
+    };
+
+    function saveSettings() {
+      configKeys.forEach(k => {
+        localStorage.setItem('storeAdmin_' + k, document.getElementById(k).value.trim());
+      });
+      showStatus('Settings saved to local storage.', 'success');
+      setTimeout(()=>document.getElementById('statusMessage').classList.add('hidden'), 3000);
+    }
+
+    function showStatus(msg, type='info') {
+      const el = document.getElementById('statusMessage');
+      el.classList.remove('hidden', 'bg-green-500/20', 'text-green-400', 'bg-red-500/20', 'text-red-400', 'bg-blue-500/20', 'text-blue-400');
+      if (type === 'success') el.classList.add('bg-green-500/20', 'text-green-400');
+      else if (type === 'error') el.classList.add('bg-red-500/20', 'text-red-400');
+      else el.classList.add('bg-blue-500/20', 'text-blue-400');
+      el.textContent = msg;
+    }
+
+    function setLoader(state, msg) {
+      const el = document.getElementById('loadingOverlay');
+      if (state) {
+        document.getElementById('loadingText').textContent = msg || 'Processing...';
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }
+    }
+
+    // Cloudinary Upload
+    async function uploadToCloudinary(input, targetInputId) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      
+      const cdName = document.getElementById('cdName').value.trim();
+      const cdPreset = document.getElementById('cdPreset').value.trim();
+      
+      if (!cdName || !cdPreset) {
+        alert("Please fill Cloudinary settings first.");
+        return;
+      }
+
+      setLoader(true, `Uploading ${file.name} to Cloudinary...`);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', cdPreset);
+
+      try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cdName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (response.ok) {
+          document.getElementById(targetInputId).value = data.secure_url;
+          showStatus("File uploaded successfully to Cloudinary!", "success");
+        } else {
+          throw new Error(data.error?.message || "Upload failed");
+        }
+      } catch (err) {
+        alert("Cloudinary Upload Error: " + err.message);
+      } finally {
+        setLoader(false);
+      }
+    }
+
+    // GitHub API Commit Flow
+    async function submitItem() {
+      // Get config
+      const ghToken = document.getElementById('ghToken').value.trim();
+      const ghUser = document.getElementById('ghUser').value.trim();
+      const ghRepo = document.getElementById('ghRepo').value.trim();
+      const ghPath = document.getElementById('ghPath').value.trim();
+      const ghBranch = document.getElementById('ghBranch').value.trim() || 'main';
+
+      if (!ghToken || !ghUser || !ghRepo || !ghPath) {
+        alert("Please fill all required GitHub settings.");
+        return;
+      }
+
+      // Get item details
+      const title = document.getElementById('itemTitle').value.trim();
+      const category = document.getElementById('itemCategory').value.trim() || 'Apps';
+      const desc = document.getElementById('itemDesc').value.trim();
+      const version = document.getElementById('itemVersion').value.trim();
+      const imageUrl = document.getElementById('itemImageUrl').value.trim();
+      const fileUrl = document.getElementById('itemFileUrl').value.trim();
+
+      if (!title || !desc || !imageUrl || !fileUrl) {
+        alert("Please fill all required item details.");
+        return;
+      }
+
+      const newItem = {
+        title: title,
+        description: desc,
+        link: fileUrl,
+        image: imageUrl,
+        category: category
+      };
+      if (version) newItem.version = version;
+
+      setLoader(true, "Fetching data.json from GitHub...");
+      saveSettings(); // auto save config
+
+      const headers = {
+        "Authorization": `token ${ghToken}`,
+        "Accept": "application/vnd.github.v3+json"
+      };
+      const apiBase = `https://api.github.com/repos/${ghUser}/${ghRepo}`;
+
+      try {
+        // 1. Get branch info
+        let refRes = await fetch(`${apiBase}/git/ref/heads/${ghBranch}`, { headers });
+        if (!refRes.ok) throw new Error("Could not find branch " + ghBranch);
+        const refData = await refRes.json();
+        const latestCommitSha = refData.object.sha;
+
+        // 2. Get the commit tree
+        let commitRes = await fetch(`${apiBase}/git/commits/${latestCommitSha}`, { headers });
+        const commitData = await commitRes.json();
+        const baseTreeSha = commitData.tree.sha;
+
+        // 3. Get the existing data.json file contents directly from raw githubusercontent
+        setLoader(true, "Reading existing JSON data...");
+        // Fetch raw file to parse avoiding base64 decoding issues in browser
+        let contentRes = await fetch(`https://raw.githubusercontent.com/${ghUser}/${ghRepo}/${ghBranch}/${ghPath}?t=${Date.now()}`);
+        let currentArray = [];
+        if (contentRes.ok) {
+          try { currentArray = await contentRes.json(); } catch(e) {}
+        }
+
+        // 4. Update the JSON
+        currentArray.push(newItem);
+        const newJsonString = JSON.stringify(currentArray, null, 2);
+
+        // 5. Create Blob
+        setLoader(true, "Creating Blob on GitHub...");
+        let blobRes = await fetch(`${apiBase}/git/blobs`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ content: newJsonString, encoding: 'utf-8' })
+        });
+        const blobData = await blobRes.json();
+        const newBlobSha = blobData.sha;
+
+        // 6. Create Tree
+        setLoader(true, "Updating Tree...");
+        let treeRes = await fetch(`${apiBase}/git/trees`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            base_tree: baseTreeSha,
+            tree: [{
+              path: ghPath,
+              mode: "100644",
+              type: "blob",
+              sha: newBlobSha
+            }]
+          })
+        });
+        const treeData = await treeRes.json();
+        const newTreeSha = treeData.sha;
+
+        // 7. Create Commit
+        setLoader(true, "Creating Commit...");
+        let createCommitRes = await fetch(`${apiBase}/git/commits`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            message: `Add ${title} via Admin Panel`,
+            tree: newTreeSha,
+            parents: [latestCommitSha]
+          })
+        });
+        const newCommitData = await createCommitRes.json();
+        const newCommitSha = newCommitData.sha;
+
+        // 8. Update Reference (Branch)
+        setLoader(true, "Pushing Commit...");
+        let updateRefRes = await fetch(`${apiBase}/git/refs/heads/${ghBranch}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
+            sha: newCommitSha,
+            force: false
+          })
+        });
+
+        if (updateRefRes.ok) {
+          showStatus("Success! The data was updated on GitHub.", "success");
+          // Clear form
+          document.getElementById('itemTitle').value = '';
+          document.getElementById('itemDesc').value = '';
+          document.getElementById('itemVersion').value = '';
+          document.getElementById('itemImageUrl').value = '';
+          document.getElementById('itemFileUrl').value = '';
+        } else {
+          throw new Error("Failed to update branch reference.");
+        }
+
+      } catch (err) {
+        console.error(err);
+        showStatus("GitHub Error: " + err.message, "error");
+      } finally {
+        setLoader(false);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -304,6 +304,37 @@
       .grid { grid-template-columns: 1fr; }
       main { padding: 2rem 1rem; }
     }
+
+    .category-filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+    
+    .filter-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent);
+      color: #93c5fd;
+    }
   </style>
 </head>
 <body>
@@ -327,6 +358,8 @@
 
   <main>
     <h1 class="section-title" id="latest">Latest Releases</h1>
+    
+    <div id="categoryFilters" class="category-filters" style="display: none;"></div>
     
     <div id="contentGrid" class="grid">
       <!-- Loader initially displays here -->
@@ -355,6 +388,9 @@
 
     // Fetch and Render Data
     const contentGrid = document.getElementById('contentGrid');
+    const categoryFilters = document.getElementById('categoryFilters');
+    let allItems = [];
+    let currentCategory = 'All';
 
     async function loadData() {
       try {
@@ -368,16 +404,17 @@
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
+        allItems = await response.json();
         
-        if (data && data.length > 0) {
+        if (allItems && allItems.length > 0) {
           const mainDownloadBtn = document.getElementById('mainDownloadLink');
           if (mainDownloadBtn) {
-            mainDownloadBtn.href = data[0].link;
+            mainDownloadBtn.href = allItems[0].link;
           }
         }
         
-        renderCards(data);
+        populateCategories();
+        filterData('All');
         
       } catch (error) {
         console.error("Could not load data.json:", error);
@@ -422,7 +459,10 @@
             <div class="card-content">
               <div class="card-header">
                 <h2 class="card-title">${item.title}</h2>
-                ${versionBadge}
+                <div style="display:flex;gap:6px;align-items:center;">
+                  ${item.category ? `<span class="card-version" style="background:rgba(168,85,247,0.2);color:#d8b4fe;">${item.category}</span>` : ''}
+                  ${versionBadge}
+                </div>
               </div>
               <p class="card-desc">${item.description}</p>
               <a href="${item.link}" class="btn-download" target="_blank" rel="noopener noreferrer">
@@ -442,6 +482,33 @@
         contentGrid.style.opacity = '1';
       }, 50);
     }
+
+    function populateCategories() {
+      if (!allItems || allItems.length === 0) return;
+      
+      const categories = ['All', ...new Set(allItems.map(item => item.category || 'Apps').filter(Boolean))];
+      
+      if (categories.length > 1) {
+        categoryFilters.innerHTML = categories.map(cat => 
+          `<button class="filter-btn ${cat === currentCategory ? 'active' : ''}" onclick="filterData('${cat}')">${cat}</button>`
+        ).join('');
+        categoryFilters.style.display = 'flex';
+      }
+    }
+
+    window.filterData = function(category) {
+      currentCategory = category;
+      
+      // Update active btn
+      const btns = categoryFilters.querySelectorAll('.filter-btn');
+      btns.forEach(btn => {
+        if(btn.textContent === category) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      const filtered = category === 'All' ? allItems : allItems.filter(item => (item.category || 'Apps') === category);
+      renderCards(filtered);
+    };
 
     // Initialize
     document.addEventListener('DOMContentLoaded', loadData);
