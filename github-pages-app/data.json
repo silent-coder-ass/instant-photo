@@ -1,35 +1,5 @@
 [
   {
-    "id": "app_96a8d2da",
-    "title": "Wedding",
-    "description": "Album containing 3 files.",
-    "link": "#",
-    "image": "",
-    "category": "Album",
-    "version": "",
-    "is_album": true,
-    "album_files": [
-      {
-        "id": "bulk_1776568269977_0",
-        "name": "passport-sheet-3.pdf",
-        "url": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1776568275/if2k0x6osrv5utcduhu4.pdf",
-        "type": "application/pdf"
-      },
-      {
-        "id": "bulk_1776568276390_1",
-        "name": "passport-sheet-2.pdf",
-        "url": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1776568278/m9sajovmzttqyz9ghved.pdf",
-        "type": "application/pdf"
-      },
-      {
-        "id": "bulk_1776568278845_2",
-        "name": "passport-sheet.pdf",
-        "url": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1776568280/v8yffbaxtuawjlxc5wrl.pdf",
-        "type": "application/pdf"
-      }
-    ]
-  },
-  {
     "id": "app_cricket_speed",
     "title": "Cricket Speed Tracker Pro",
     "description": "High-performance camera-based AI tracking for cricket ball speed in real-time.",
