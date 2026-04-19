@@ -1,23 +1,20 @@
 [
   {
+    "id": "app_9168a653",
+    "title": "photo",
+    "description": "marrieg memories",
+    "link": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1776566039/dn1kabvvsiaaflfvm2t3.pdf",
+    "image": "https://res.cloudinary.com/dx3gpnczk/image/upload/v1776566009/h9er2kij6k6m6syiy9rl.jpg",
+    "category": "photo",
+    "version": ""
+  },
+  {
+    "id": "app_cricket_speed",
     "title": "Cricket Speed Tracker Pro",
     "description": "High-performance camera-based AI tracking for cricket ball speed in real-time.",
     "link": "https://github.com/SanuwarBuilds/Download-file-repo/raw/refs/heads/main/CricZ_v5.0_kill_enc___40_1__41_.apk",
     "image": "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=600&auto=format&fit=crop",
+    "category": "Apps",
     "version": "2.1.0"
-  },
-  {
-    "title": "Neon Hand-Tracking Hub",
-    "description": "Minimalist dual-hand tracking application with real-time analytical HUD metrics.",
-    "link": "https://github.com/username/repo/raw/main/neon-tracking.apk",
-    "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&auto=format&fit=crop",
-    "version": "1.0.5"
-  },
-  {
-    "title": "cricket tv",
-    "description": "watch unlimited cricket for free.",
-    "link": "https://github.com/SanuwarBuilds/Download-file-repo/raw/refs/heads/main/CricZ_v5.0_kill_enc___40_1__41_.apk",
-    "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&auto=format&fit=crop",
-    "version": "1.0.5"
   }
 ]
