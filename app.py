@@ -393,11 +393,11 @@ def api_admin_widgets_reorder():
 def sync_store_apps_to_github():
     try:
         import os, shutil, requests, base64
-        # Always sync to local frontend first
+        # Always sync local copy first
         shutil.copy("data/downloads.json", "github-pages-app/data.json")
         
         # Github Sync
-        github_pat = os.getenv("GITHUB_PAT")
+        github_pat  = os.getenv("GITHUB_PAT")
         github_user = os.getenv("GITHUB_USER")
         github_repo = os.getenv("GITHUB_REPO")
         
@@ -407,31 +407,36 @@ def sync_store_apps_to_github():
             
         with open("data/downloads.json", "r") as f:
             content = f.read()
-            
-        url = f"https://api.github.com/repos/{github_user}/{github_repo}/contents/data.json"
+        
+        encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
         headers = {
             "Authorization": f"token {github_pat}",
             "Accept": "application/vnd.github.v3+json"
         }
-        
-        # Get SHA
-        get_res = requests.get(url, headers=headers)
-        sha = get_res.json().get("sha") if get_res.status_code == 200 else None
-        
-        payload = {
-            "message": "Auto-sync store apps from Admin Panel",
-            "content": base64.b64encode(content.encode("utf-8")).decode("utf-8")
-        }
-        if sha:
-            payload["sha"] = sha
-            
-        put_res = requests.put(url, headers=headers, json=payload)
-        if put_res.status_code in [200, 201]:
-            print("Successfully synced to GitHub!")
-        else:
-            print(f"Failed to sync to GitHub: {put_res.text}")
+
+        def push_file(path):
+            url = f"https://api.github.com/repos/{github_user}/{github_repo}/contents/{path}"
+            get_res = requests.get(url, headers=headers)
+            sha = get_res.json().get("sha") if get_res.status_code == 200 else None
+            payload = {
+                "message": "Auto-sync store apps from Admin Panel",
+                "content": encoded
+            }
+            if sha:
+                payload["sha"] = sha
+            put_res = requests.put(url, headers=headers, json=payload)
+            if put_res.status_code in [200, 201]:
+                print(f"✅ Synced to GitHub: {path}")
+            else:
+                print(f"❌ Failed to sync {path}: {put_res.text[:200]}")
+
+        # Push to both locations so GitHub Pages always gets updated
+        push_file("data/downloads.json")
+        push_file("github-pages-app/data.json")
+
     except Exception as e:
         print(f"Error syncing to github: {e}")
+
 
 @app.route("/api/admin/store-apps", methods=["GET", "POST"])
 @login_required
