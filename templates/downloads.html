@@ -576,7 +576,7 @@
 
       const btn = item.is_album
         ? `<button class="btn-dl btn-dl-album" onclick="openAlbumModal('${item.id}')"><i class="fa-solid fa-folder-open"></i> View Album</button>`
-        : `<a href="${dl}" class="btn-dl" download><i class="fa-solid fa-cloud-arrow-down"></i> Download</a>`;
+        : `<button onclick="forceDownload(this, '${dl}', '${item.title.replace(/'/g, "\\'")}')" class="btn-dl"><i class="fa-solid fa-cloud-arrow-down"></i> Download</button>`;
 
       return `
         <article class="card">
@@ -616,7 +616,7 @@
           <div class="album-file-thumb">${thumb}</div>
           <div class="album-file-info">
             <div class="album-file-name">${f.name || 'File'}</div>
-            <a href="${link}" class="album-file-dl" download><i class="fa-solid fa-download"></i> Download</a>
+            <button onclick="forceDownload(this, '${link}', '${(f.name || 'File').replace(/'/g, "\\'")}')" class="album-file-dl"><i class="fa-solid fa-download"></i> Download</button>
           </div>
         </div>`;
     }).join('');
@@ -626,6 +626,36 @@
   window.closeAlbumModal = function(e) {
     if (!e || e.target === document.getElementById('albumModal')) {
       document.getElementById('albumModal').classList.remove('open');
+    }
+  };
+
+  window.forceDownload = async function(btn, url, defaultName) {
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+    btn.disabled = true;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Network error");
+      const blob = await res.blob();
+      const localUrl = window.URL.createObjectURL(blob);
+      let ext = url.split('.').pop().split('?')[0];
+      if (ext && ext.includes('/')) ext = '';
+      let filename = defaultName || 'download';
+      if (ext && !filename.toLowerCase().endsWith('.' + ext.toLowerCase())) {
+          filename += '.' + ext;
+      }
+      const a = document.createElement('a');
+      a.href = localUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(localUrl);
+    } catch (err) {
+      window.open(url, '_blank');
+    } finally {
+      btn.innerHTML = oldHtml;
+      btn.disabled = false;
     }
   };
 
