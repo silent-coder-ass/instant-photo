@@ -401,11 +401,22 @@ def api_admin_widgets_reorder():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def sync_store_apps_to_github():
+def sync_store_apps_to_github(data_list=None):
     try:
-        import os, shutil, requests, base64
-        # Always sync local copy first
-        shutil.copy("data/downloads.json", "github-pages-app/data.json")
+        import os, shutil, requests, base64, json
+        
+        if data_list is not None:
+            content = json.dumps(data_list, indent=2)
+        else:
+            with open("data/downloads.json", "r") as f:
+                content = f.read()
+
+        try:
+            with open("data/downloads.json", "w") as f:
+                f.write(content)
+            shutil.copy("data/downloads.json", "github-pages-app/data.json")
+        except Exception as e:
+            print(f"Skipping Vercel local file copy: {e}")
         
         # Github Sync
         github_pat  = os.getenv("GITHUB_PAT")
@@ -484,10 +495,13 @@ def create_store_app():
         }
         
         items.insert(0, new_app) # Add to top
-        with open("data/downloads.json", "w") as f:
-            json.dump(items, f, indent=2)
+        try:
+            with open("data/downloads.json", "w") as f:
+                json.dump(items, f, indent=2)
+        except Exception as e:
+            print(f"Skipping Vercel local save: {e}")
             
-        sync_store_apps_to_github()
+        sync_store_apps_to_github(items)
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -515,10 +529,13 @@ def update_store_app(app_id):
                     items[idx]["album_files"] = data["album_files"]
                 break
                 
-        with open("data/downloads.json", "w") as f:
-            json.dump(items, f, indent=2)
+        try:
+            with open("data/downloads.json", "w") as f:
+                json.dump(items, f, indent=2)
+        except Exception as e:
+            print(f"Skipping Vercel local save: {e}")
             
-        sync_store_apps_to_github()
+        sync_store_apps_to_github(items)
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -566,10 +583,13 @@ def delete_store_app(app_id):
         # Remove from list
         items = [x for x in items if x.get("id") != app_id]
         
-        with open("data/downloads.json", "w") as f:
-            json.dump(items, f, indent=2)
+        try:
+            with open("data/downloads.json", "w") as f:
+                json.dump(items, f, indent=2)
+        except Exception as e:
+            print(f"Skipping Vercel local save: {e}")
             
-        sync_store_apps_to_github()
+        sync_store_apps_to_github(items)
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
