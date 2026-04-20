@@ -1,21 +1,5 @@
 [
   {
-    "id": "app_55804d82",
-    "title": "qaaaa",
-    "description": "1 items in this album.",
-    "link": "",
-    "image": "https://res.cloudinary.com/dpbuhcvui/image/upload/v1776662912/oihngqumvma1u8sr0f2u.jpg",
-    "category": "Albums",
-    "version": "1.0",
-    "is_album": true,
-    "album_files": [
-      {
-        "name": "93b4b221-9bdd-4483-b207-281c080c9a90.JPG",
-        "link": "https://res.cloudinary.com/dpbuhcvui/image/upload/v1776662912/oihngqumvma1u8sr0f2u.jpg"
-      }
-    ]
-  },
-  {
     "title": "Cricket Speed Tracker Pro",
     "description": "High-performance camera-based AI tracking for cricket ball speed in real-time.",
     "link": "https://github.com/SanuwarBuilds/Download-file-repo/raw/refs/heads/main/CricZ_v5.0_kill_enc___40_1__41_.apk",
