@@ -8,8 +8,9 @@ import uuid
 import datetime
 import utils
 
-# Force load .env — override=True ensures values always fresh even in debug/reload
-load_dotenv(override=True)
+# Force load .env from exact path to avoid any missing keys
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+load_dotenv(dotenv_path=env_path, override=True)
 
 import cloudinary
 import cloudinary.uploader
@@ -537,7 +538,12 @@ def delete_store_app(app_id):
 
         # Optionally destroy from Cloudinary
         try:
-            import cloudinary.uploader
+            import cloudinary, cloudinary.uploader
+            cloudinary.config(
+                cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+                api_key=os.getenv("CLOUDINARY_API_KEY"),
+                api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+            )
             links_to_delete = []
             if item_to_delete.get("is_album"):
                 for af in item_to_delete.get("album_files", []):
