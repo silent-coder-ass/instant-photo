@@ -322,11 +322,18 @@ def api_admin_upload():
     try:
         import cloudinary, cloudinary.uploader
 
+        cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+        api_key = os.getenv("CLOUDINARY_API_KEY")
+        api_secret = os.getenv("CLOUDINARY_API_SECRET")
+
+        if not cloud_name or not api_key:
+            return jsonify({"error": "Vercel setup incomplete: Cloudinary Environment Variables are missing in Vercel dashboard!"}), 500
+
         # Always explicitly configure Cloudinary before uploading
         cloudinary.config(
-            cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-            api_key=os.getenv("CLOUDINARY_API_KEY"),
-            api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+            cloud_name=cloud_name,
+            api_key=api_key,
+            api_secret=api_secret,
         )
         
         # Check if JSON payload (Base64)
