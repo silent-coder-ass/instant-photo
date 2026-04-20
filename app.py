@@ -368,6 +368,45 @@ def api_admin_upload():
         print(f"Widget Image Upload Error: {e}")
         return jsonify({"error": "Cloudinary upload failed: " + str(e)}), 500
 
+@app.route("/api/admin/cloudinary-signature", methods=["POST"])
+@login_required
+def api_admin_cloudinary_signature():
+    try:
+        import time
+        import cloudinary.utils
+        import re
+        
+        data = request.json
+        if not data or "public_id" not in data:
+            return jsonify({"error": "Missing public_id"}), 400
+            
+        filename = data["public_id"]
+        # Same strict validation logic as before
+        pid = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', filename)
+        
+        timestamp = int(time.time())
+        params_to_sign = {
+            'timestamp': timestamp,
+            'public_id': pid
+        }
+        
+        signature = cloudinary.utils.api_sign_request(
+            params_to_sign, 
+            os.getenv("CLOUDINARY_API_SECRET")
+        )
+        
+        return jsonify({
+            "signature": signature,
+            "timestamp": timestamp,
+            "public_id": pid,
+            "api_key": os.getenv("CLOUDINARY_API_KEY"),
+            "cloud_name": os.getenv("CLOUDINARY_CLOUD_NAME")
+        })
+    except Exception as e:
+        print(f"Signature Generation Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/admin/widgets/<widget_id>", methods=["PUT"])
 @login_required
 def api_admin_widgets_update(widget_id):

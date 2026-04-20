@@ -1414,6 +1414,32 @@
         document.getElementById('addAppModal').classList.add('hidden');
     }
 
+    async function directCloudinaryUpload(file) {
+        const sigRes = await fetch('/api/admin/cloudinary-signature', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ public_id: file.name })
+        });
+        if (!sigRes.ok) throw new Error("Failed to get secure upload signature.");
+        const sigData = await sigRes.json();
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', sigData.api_key);
+        formData.append('timestamp', sigData.timestamp);
+        formData.append('signature', sigData.signature);
+        formData.append('public_id', sigData.public_id);
+        
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloud_name}/raw/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!uploadRes.ok) throw new Error("Direct Cloudinary upload failed.");
+        const uploadData = await uploadRes.json();
+        return uploadData.secure_url;
+    }
+
     async function submitAddApp(e) {
         e.preventDefault();
         const btn = e.target.querySelector('button[type=submit]');
@@ -1426,19 +1452,9 @@
             
             // Upload file to cloudinary if raw link is absent
             if (!finalDownloadLink && fileInput.files.length > 0) {
-                btn.textContent = 'Uploading file to Cloudinary...';
+                btn.textContent = 'Uploading directly to Cloudinary (Unlimited Size)...';
                 let f = fileInput.files[0];
-                let formData = new FormData();
-                formData.append('image', f);
-                
-                let uploadRes = await fetch('/api/admin/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!uploadRes.ok) throw new Error("File upload failed");
-                let uploadData = await uploadRes.json();
-                finalDownloadLink = uploadData.url;
+                finalDownloadLink = await directCloudinaryUpload(f);
             }
             
             if (!finalDownloadLink) {
@@ -1580,33 +1596,13 @@
         try {
             for (let i = 0; i < totalFiles; i++) {
                 let f = pendingAlbumFiles[i];
-                progressText.textContent = `Uploading ${f.name} (${i + 1}/${totalFiles})...`;
+                progressText.textContent = `Direct Uploading ${f.name} (${i + 1}/${totalFiles})...`;
                 
-                let formData = new FormData();
-                formData.append('image', f);
-                
-                let res = await fetch('/api/admin/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+                let secureUrl = await directCloudinaryUpload(f);
 
-                if (!res.ok) {
-                    let errText = await res.text();
-                    let errMsg = "Server error";
-                    try {
-                        let errJson = JSON.parse(errText);
-                        errMsg = errJson.error || errMsg;
-                    } catch(e) {
-                        if (res.status === 413) errMsg = "File exceeds the 4.5MB server limit! Please compress it.";
-                        else errMsg = `HTTP Error ${res.status}: Check server logs.`;
-                    }
-                    throw new Error(`Failed on ${f.name}: ` + errMsg);
-                }
-
-                let dat = await res.json();
                 uploadedFiles.push({
                     name: f.name,
-                    link: dat.url
+                    link: secureUrl
                 });
                 
                 progressBar.style.width = Math.round(((i + 1) / totalFiles) * 100) + '%';
