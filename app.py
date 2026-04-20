@@ -317,7 +317,14 @@ def api_admin_widgets_add():
 @login_required
 def api_admin_upload():
     try:
-        import cloudinary.uploader
+        import cloudinary, cloudinary.uploader
+
+        # Always explicitly configure Cloudinary before uploading
+        cloudinary.config(
+            cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+            api_key=os.getenv("CLOUDINARY_API_KEY"),
+            api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        )
         
         # Check if JSON payload (Base64)
         if request.is_json:
@@ -338,8 +345,9 @@ def api_admin_upload():
         secure_url = upload_result.get("secure_url")
         return jsonify({"success": True, "url": secure_url})
     except Exception as e:
-        print(f"Widget Image Upload Error: {e}")
+        print(f"Upload Error: {e}")
         return jsonify({"error": "Cloudinary upload failed: " + str(e)}), 500
+
 
 @app.route("/api/admin/widgets/<widget_id>", methods=["PUT"])
 @login_required
