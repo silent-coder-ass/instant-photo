@@ -1,5 +1,33 @@
 [
   {
+    "id": "app_611fea08",
+    "title": "Marriage event (Dulena)",
+    "description": "4 items in this album.",
+    "link": "",
+    "image": "https://res.cloudinary.com/dpbuhcvui/raw/upload/v1776731095/IMG_2402.jpeg",
+    "category": "Albums",
+    "version": "1.0",
+    "is_album": true,
+    "album_files": [
+      {
+        "name": "IMG_2402.jpeg",
+        "link": "https://res.cloudinary.com/dpbuhcvui/raw/upload/v1776731095/IMG_2402.jpeg"
+      },
+      {
+        "name": "IMG_2403.jpeg",
+        "link": "https://res.cloudinary.com/dpbuhcvui/raw/upload/v1776731097/IMG_2403.jpeg"
+      },
+      {
+        "name": "IMG_2408.jpeg",
+        "link": "https://res.cloudinary.com/dpbuhcvui/raw/upload/v1776731100/IMG_2408.jpeg"
+      },
+      {
+        "name": "IMG_2414.jpeg",
+        "link": "https://res.cloudinary.com/dpbuhcvui/raw/upload/v1776731102/IMG_2414.jpeg"
+      }
+    ]
+  },
+  {
     "id": "app_ef74a44d",
     "title": "Marriage memories (Abed Ali)",
     "description": "11 items in this album.",
